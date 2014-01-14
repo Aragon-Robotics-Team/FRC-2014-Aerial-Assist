@@ -18,8 +18,8 @@ public class MyRobot: SimpleRobot
 void main() {
 	//do calculations based on encoder specifications
 	double FINALDISTANCE;
-	Encoder EncoderL(1, 2); //left
-	Encoder EncoderR(3, 4); //right
+	Encoder EncoderL(1, 2); //left wheel's encoder
+	Encoder EncoderR(3, 4); //right wheel's encoder
 	EncoderL.Start();
 	EncoderR.Start();
 	EncoderL.SetDistancePerPulse(DISTANCEPERPULSE);
@@ -55,64 +55,34 @@ void main() {
 		}
 	}
 	void Shoot() { 
-	/* does some funky bullshoot (pls don report appersun)
-	
-	-love ur fave student ken
+	/*
+	ADD SHOOTER CODE LATER (IE ONCE BUILD HAS A BOT)
 	*/
 	
 	
 	}
 	
-	void Autonomous(){ //:D
+	void Autonomous(){	//Robot moves forward a preset distance based on encoder reading
 		
 		double ticks = max(EncoderL.Get(), EncoderR.Get());
 		double distance = ticks * DISTANCEPERPULSE;
 		while(distance < FINALDISTANCE){
-			drive.TankDrive (.75, .75); //vroom vroom lyk a racecar
-			double x = EncoderL.Get() * DISTANCEPERPULSE; //crio maybe help alto
+			drive.TankDrive (.75, .75); //or whatever power level gives us accurate enough code
+			double x = EncoderL.Get() * DISTANCEPERPULSE;
 			double y = EncoderR.Get() * DISTANCEPERPULSE;
-			cout << "Left wheels: " + x + " feet \nRight wheels: " + y + "feet" << endl;
+			cout << "Left wheels: " + x + " feet \nRight wheels: " + y + "feet" << endl;	//or however you out put to the driver station
 			
 			ticks = max(EncoderL.Get(), EncoderR.Get());
 			distance = ticks * DISTANCEPERPULSE;
 		}
-		EncoderL.Stop();
+		EncoderL.Stop();	//BEGIN Reset encoders and stop bot
 		EncoderR.Stop();
 		EncoderL.Reset();
 		EncoderR.Reset();
-		drive.TankDrive(.75, .75);
+		
+		drive.TankDrive(0, 0);	//END Reset encoders and stop bot
 		
 		break;
 	}
 	
-}
-
-	
-	
-	//do calculations based on encoder specifications
-	double FINALDISTANCE;
-	Encoder EncoderL(1, 2); //left
-	Encoder EncoderR(3, 4); //right
-	EncoderL.Start();
-	EncoderR.Start();
-	EncoderL.SetDistancePerPulse(DISTANCEPERPULSE);
-	EncoderR.SetDistancePerPulse(DISTANCEPERPULSE);
-	
-	double ticks = max(EncoderL.Get(), EncoderR.Get());
-	double distance = ticks * DISTANCEPERPULSE;
-	while(distance < FINALDISTANCE){
-		
-		double x = EncoderL.Get() * DISTANCEPERPULSE; //crio maybe help alto
-		double y = EncoderR.Get() * DISTANCEPERPULSE;
-		cout << "Left wheels: " + x + " feet \nRight wheels: " + y + "feet" << endl;
-		
-		ticks = max(EncoderL.Get(), EncoderR.Get());
-		distance = ticks * DISTANCEPERPULSE;
-	}
-	EncoderL.Stop();
-	EncoderR.Stop();
-	EncoderL.Reset();
-	EncoderR.Reset();
-	
-	break;
 }
