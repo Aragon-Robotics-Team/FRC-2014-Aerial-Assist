@@ -1,11 +1,11 @@
-/* VERY rought draft of code possibly used by the encoders
+/* VERY rough draft of code possibly used by the encoders
 Code is not finalized or optimized, DO NOT USE in current state*/
 #include "WIPLib.h"
 #include "Gamepad.h"
 #include "Target.h"
 #include <SimpleRobot.h>
 #include <AnalogChannel.h>
-#include <math.h>
+#include <math.h>	//Are we using this? If not, please remove
 
 #define PI 3.141592
 #define RADTODEG(x) ((x) * 57.29578)
@@ -26,7 +26,7 @@ void main() {
 	EncoderR.SetDistancePerPulse(DISTANCEPERPULSE);
 	
 	RobotDrive drive;
-	leftMotor = new Talon(5);
+	leftMotor = new Talon(5);	//Assuming we use Talons
 	rightMotor = new Talon(6);
 	
 			
