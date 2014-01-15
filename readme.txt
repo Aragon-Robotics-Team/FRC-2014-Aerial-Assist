@@ -1,6 +1,3 @@
 This repository contains all code used by Aragon Robotics Team 840 for the 2014 FRC game, Aerial Assist.
 Not all files present in the repo are used in the final design.
 Please deffer to each file's first comment for its purpose.
-
-DEMO LINE (ps alto need to learn how to do)
-ALSO DEMO (cmd line)
