@@ -7,7 +7,7 @@ Code is not finalized or optimized, DO NOT USE in current state*/
 #include <AnalogChannel.h>
 #include <math.h>	//Are we using this? If not, please remove
 
-#define PI 3.141592
+#define PI 3.141592	//Shirin please change all preprocessor macros to constants, thanks! -Miles
 #define RADTODEG(x) ((x) * 57.29578)
 #define DISTANCEPERPULSE ((6 * PI) / 250)
 
@@ -53,13 +53,6 @@ void main() {
 			}
 			
 		}
-	}
-	void Shoot() { 
-	/*
-	ADD SHOOTER CODE LATER (IE ONCE BUILD HAS A BOT)
-	*/
-	
-	
 	}
 	
 	void Autonomous(){	//Robot moves forward a preset distance based on encoder reading
