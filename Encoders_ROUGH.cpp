@@ -8,9 +8,8 @@ Code is not finalized or optimized, DO NOT USE in current state*/
 #include <math.h>
 
 #define _USE_MATH_DEFINES	//Allows us to use preprocessor macros defined in math.h (ie M_PI)
-/*#define RAD_TO_DEG(x) ((x) * 57.29578)*/ //Not in use
 
-const double distancePerPulse(0.075398) /*6 * M_PI / 250*/ // should we use this instead to get a more accurate figure? -M
+const double distancePerPulse = 6 * M_PI / 250;
 
 using namespace std
 
@@ -38,7 +37,7 @@ void main() {
 			drive.TankDrive (.75, .75); //or whatever power level gives us accurate enough code
 			double x = EncoderL.Get() * distancePerPulse;
 			double y = EncoderR.Get() * distancePerPulse;
-			cout << "Left wheels: " + x + " feet \nRight wheels: " + y + "feet" << endl;	//or however you out put to the driver station
+			//cout << "Left wheels: " + x + " feet \nRight wheels: " + y + "feet" << endl;	or however you out put to the driver station
 			
 			ticks = max(EncoderL.Get(), EncoderR.Get());
 			distance = ticks * distancePerPulse;

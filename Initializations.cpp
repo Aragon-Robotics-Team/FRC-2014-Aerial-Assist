@@ -11,6 +11,7 @@ void main() {
 	rightMotor = new Talon(6);
 	myDrive = new RobotDrive(leftMotor, rightMotor);
 	//END
+
 	//BEGIN: 2 Encoders
 	Encoder EncoderL(1, 2); //left wheel's encoder
 	Encoder EncoderR(3, 4); //right wheel's encoder
