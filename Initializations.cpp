@@ -1,4 +1,4 @@
-/*Initializes all of the compnents we will be using in the final bot code.
+/*Initializes all of the components we will be using in the final bot code.
 Meant to be copy-pasted into our final file*/
 
 /*NEEDS:
