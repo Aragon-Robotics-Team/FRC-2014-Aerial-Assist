@@ -1,0 +1,36 @@
+#include "WIPLib.h"
+#include "Gamepad.h"
+/*#include "Target.h"*/ //Is this used? -M
+#include <SimpleRobot.h>
+#include <AnalogChannel.h>
+#include <math.h>
+
+void main()
+{
+	/*Talon.spoolMotor;
+	Talon.clutchMotor;*/
+	
+	/*button initialization elsewhere*/
+	
+	/*spoolMotor = new Talon(x);
+	clutchMotor = new Talon(y); //wat 
+	
+	bool isPressed = false;
+	void winch()
+	{
+		while (whatever button is depressed || isPressed == true){
+			spoolMotor(1);
+			isPressed = true;
+			if (someotherbutton = true)
+				{
+					isPressed = false;
+					clutchMotor(.05);
+					while (whatever button is depressed == true) {
+						clutchMotor(-.05);
+						wait(2);
+						clutchMotor(0);
+					}
+				}
+		}
+	}
+}
