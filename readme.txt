@@ -10,5 +10,6 @@ Coders' Rules:
 5. Push often
 6. Keep code clear and readable (for now...)
 7. No pointers!
-8. Stay classy
+8. https://www.thc.org/root/phun/unmaintain.html is your bfll
+9. Stay classy
 9001. NO KITTEN COMMENTS!
