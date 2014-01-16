@@ -1,8 +1,0 @@
-Resident Evil control with only gamepad
-2 buttons; 1 for windup 1 for fire
-Joystick only
-Two driver
-1 driver
-Less drivers = less synergy
-100% autonomous
-
