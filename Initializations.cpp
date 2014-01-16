@@ -5,7 +5,7 @@ Meant to be copy-pasted into our final file*/
 const double distancePerPulse FOUND IN Encoders_ROUGH.cpp
 */
 void main() {
-	//BEGIN: 2 Motor Drive
+	//BEGIN: 2 Motor Drive system
 	RobotDrive drive;
 	leftMotor = new Talon(5);
 	rightMotor = new Talon(6);
