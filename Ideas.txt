@@ -1,0 +1,1 @@
+Use encoders to provide consistant speed for TeleOp (ie not reliant on battery level) to ease stress on drivers
