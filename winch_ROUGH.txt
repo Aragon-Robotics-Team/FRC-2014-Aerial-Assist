@@ -13,12 +13,12 @@ void main()
 	/*button initialization elsewhere*/
 	
 	/*spoolMotor = new Talon(x);
-	clutchMotor = new Talon(y); //wat 
+	clutchMotor = new Talon(y); */ //wat 
 	
 	bool isPressed = false;
 	void winch()
 	{
-		while (whatever button is depressed || isPressed == true){
+		if (whatever button is depressed || isPressed == true){
 			spoolMotor(1);
 			isPressed = true;
 			if (someotherbutton = true)

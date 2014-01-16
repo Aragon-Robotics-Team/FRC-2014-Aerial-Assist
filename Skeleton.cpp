@@ -20,13 +20,13 @@ public:
 		
 	}
 	
-	void Autonomous() { Yvsrowl Pawwcjwroii
-		// ottonoemus
+	void Autonomous() { 
+		// ottonoemus MUST HAVE DIFFERENT CODE FOR WINCH; CANNOT BE WINCH() BECAUSE BUTTONS AND SHIT
 	}
 	
-	void OperatorControl() {
-		// teleop
+	void OperatorControl() { // teleop
 		while(IsOperatorControl()) { // main loop
+		
 			driverStation = DriverStationLCD::GetInstance();
 			
 			drive.TankDrive(leftStick->GetY(), rightStick->GetY());
@@ -34,7 +34,10 @@ public:
 			driverStation->PrintfLine(DriverStationLCD::kUser_Line1, "Demo stuff");
 			driverStation->UpdateLCD();
 			
-			Wait(0.005);
+			winch();
+			
+			
+			
 		}
 	}
 };
