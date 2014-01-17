@@ -1,3 +1,6 @@
+/*basic winch stuff. not sure if it will be utilized in the final robot, b/c it is specific to a certain prototype.
+still should proofread though*/
+
 #include "WIPLib.h"
 #include "Gamepad.h"
 /*#include "Target.h"*/ //Is this used? -M
