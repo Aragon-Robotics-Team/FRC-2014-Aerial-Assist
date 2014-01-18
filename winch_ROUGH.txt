@@ -1,6 +1,6 @@
 #include "WIPLib.h"
 #include "Gamepad.h"
-/*#include "Target.h"*/ //Is this used? -M
+//#include "Target.h" Is this used? -M
 #include <SimpleRobot.h>
 #include <AnalogChannel.h>
 #include <math.h>
@@ -8,7 +8,7 @@
 void main()
 {
 	/*Talon.spoolMotor;
-	Talon.clutchMotor;*/
+	Talon.clutchMotor; not sure if ini goes here -K*/
 	
 	/*button initialization elsewhere*/
 	
@@ -18,19 +18,19 @@ void main()
 	bool isPressed = false;
 	void winch()
 	{
-		if (whatever button is depressed || isPressed == true){
+		while (whatever button is pressed || isPressed == true){
 			spoolMotor(1);
 			isPressed = true;
-			if (someotherbutton = true)
-				{
+			if (someotherbutton == true) { //this locks the winch in position
 					isPressed = false;
 					clutchMotor(.05);
-					while (whatever button is depressed == true) {
+					spoolMotor(0);
+					while (whatever button is depressed == true) { //this releases the lock on the winch, thus, releasing the winch
 						clutchMotor(-.05);
 						wait(2);
 						clutchMotor(0);
 					}
-				}
+			}
 		}
 	}
 }
