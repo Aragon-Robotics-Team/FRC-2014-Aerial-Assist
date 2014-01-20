@@ -19,6 +19,12 @@ void OperatorControl() {
 				shootPad.GetDPad() == Gamepad::kUp,
 				shootPad.GetDPad() == Gamepad::kDown);
 			}
+			drive.TankDrive = (GetLeftY, GetRightY);
+			alreadyPushed = false;
+			if (GetButton(2) && alreadyPushed == false) { //spodermotor
+				alreadyPushed = true;
+				Winch();
+			}
 			
 		}
 	}
