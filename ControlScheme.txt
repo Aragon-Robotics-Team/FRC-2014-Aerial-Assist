@@ -7,3 +7,5 @@ Less drivers = less synergy
 100% autonomous
 
 On joysticks, there are five easily accessible buttons PER JOYSTICK. 10 functions + driving = Ken wants one driver.
+
+Motor power mapped to joysticks in relation to ENCODERS
