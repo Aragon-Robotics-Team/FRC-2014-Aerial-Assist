@@ -1,0 +1,23 @@
+void main()
+{
+	claw0 = new Talon;
+	claw1 = new Talon;
+	//button ini is somewhere else I assume
+	
+	while (IsOperatorControlled) {
+		if (shootPad.GetButton(4)) {
+			claw0(.5);
+			claw1(.5);
+			wait(/*CALIBRATE LATER*/);
+			claw0(0);
+			claw1(0);
+		}
+		if (shootPad.GetButton(5)) {
+			claw0(-.5);
+			claw1(-.5);
+			wait(/*CALIBRATE LATER*/);
+			claw0(0);
+			claw1(0);
+		}
+	}
+}
