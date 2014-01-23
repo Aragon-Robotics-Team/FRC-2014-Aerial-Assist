@@ -1,0 +1,26 @@
+int wantedPixelLocationx, wantedPixelLocationy;
+
+processImage();
+get.pixelLocation();
+
+while (pixelLocationx != wantedPixelLocationx && pixelLocationy != wantedPixelLocationy) {
+	if (pixelLocationx > wantedPixelLocationx) {
+		(turn right a bit)	
+	}
+	else {
+		(drive a left a bit)
+	}
+	if (pixelLocationy > wantedPixelLocationy) {
+		(drive back a bit)
+	}
+	else {
+		(drive back a bit)
+	}
+
+	delete image981723419823468723174;
+	processImage();
+	get.pixelLocation();
+
+}
+
+shoot();
