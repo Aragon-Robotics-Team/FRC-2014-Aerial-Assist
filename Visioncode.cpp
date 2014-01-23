@@ -24,18 +24,18 @@
  */
 
 //Camera constants used for distance calculation
-#define Y_IMAGE_RES 480		//Y Image resolution in pixels, should be 120, 240 or 480
+#define Y_IMAGE_RES 480		//X Image resolution in pixels, should be 120, 240 or 480
 //#define VIEW_ANGLE 49		//Axis M1013
 #define VIEW_ANGLE 41.7		//Axis 206 camera
 //#define VIEW_ANGLE 37.4  //Axis M1011 camera
 #define PI 3.141592653
 
 //Score limits used for target identification
-#define RECTANGULARITY_LIMIT 40  // <Alton> I think this is a minimum rectangle score
-#define ASPECT_RATIO_LIMIT 55   // <Alton> This is a score from 0 - 100, actual ratios are 4/32 for vertical, and 23.5/4 for horizontal
+#define RECTANGULARITY_LIMIT 40
+#define ASPECT_RATIO_LIMIT 55
 
 //Score limits used for hot target determination
-#define TAPE_WIDTH_LIMIT 50  // <Alton> Another score from 0 - 100
+#define TAPE_WIDTH_LIMIT 50
 #define VERTICAL_SCORE_LIMIT 50
 #define LR_SCORE_LIMIT 50
 
@@ -45,7 +45,7 @@
 //Maximum number of particles to process
 #define MAX_PARTICLES 8
 
-class VisionTest : public SimpleRobot
+class VisionSample2014 : public SimpleRobot
 {
 	//Structure to represent the scores for the various tests used for target identification
 	struct Scores {
@@ -67,15 +67,14 @@ class VisionTest : public SimpleRobot
 	
 	RobotDrive myRobot; // robot drive system
 	Joystick stick; // only joystick
+	DriverStationLCD ds;
 
 public:
-	VisionTest(void):
+	VisionSample2014(void):
 		myRobot(1, 2),	// these must be initialized in the same order
 		stick(1)		// as they are declared above.
-	{
 		myRobot.SetExpiration(0.1);
 		myRobot.SetSafetyEnabled(false);
-	}
 
 	/**
 	 * Image processing code to identify 2013 Vision targets
@@ -87,9 +86,34 @@ public:
 		int verticalTargets[MAX_PARTICLES];
 		int horizontalTargets[MAX_PARTICLES];
 		int verticalTargetCount, horizontalTargetCount;
-		Threshold threshold(0, 17, 0, 255, 212, 236);	//HSI threshold criteria, ranges are in that order ie. Hue is 60-100
+		Threshold threshold(105, 137, 230, 255, 133, 183);	//HSV threshold criteria, ranges are in that order ie. Hue is 60-100
 		ParticleFilterCriteria2 criteria[] = {
 				{IMAQ_MT_AREA, AREA_MINIMUM, 65535, false, false}
+		
+		while (/*there is a blob on the screen*/) { //AQUI ESTA SOME REAL JANK CODE BRUH
+			int pixelwidthn, pixelheightn;
+			bool isItTrue;
+			//pick blob
+			
+			while(1) {
+				int pixelmax, pixelmin, pixelleft, pixelright;
+				//go down row until a true pixel is found -> pixelmax
+				//go up row until a true pixel is found -> pixelmin
+				pixelmax-pixelmin = pixelwidthn;
+				//same thing with pixelleft and pixelright, except columns, not rows
+				pixelright-pixelleft = pixelheightn;
+				if (pixelwidthn > pixelheightn) {
+					isItTrue = true;
+				}
+				else {
+					explode();
+				}
+				if isItTrue == true break;
+			}
+			shoot();
+		}
+		
+		
 		};												//Particle filter criteria, used to filter out small particles
 		// AxisCamera &camera = AxisCamera::GetInstance();	//To use the Axis camera uncomment this line
 		
@@ -103,7 +127,7 @@ public:
 			image = new RGBImage("/testImage.jpg");		// get the sample image from the cRIO flash
 
 			//image = camera.GetImage();				//To get the images from the camera comment the line above and uncomment this one
-			BinaryImage *thresholdImage = image->ThresholdHSI(threshold);	// get just the green target pixels
+			BinaryImage *thresholdImage = image->ThresholdHSV(threshold);	// get just the green target pixels
 			//thresholdImage->Write("/threshold.bmp");
 			BinaryImage *filteredImage = thresholdImage->ParticleFilter(criteria, 1);	//Remove small particles
 			//filteredImage->Write("Filtered.bmp");
@@ -218,6 +242,9 @@ public:
 		myRobot.SetSafetyEnabled(true);
 		while (IsOperatorControl())
 		{
+			ds = DriverStationLCD::GetInstance();
+			ds->PrintfLine(DriverStationLCD::kUser_Line2, "Hot or not: %s", );
+			ds->UpdateLCD();
 			Wait(0.005);				// wait for a motor update time
 		}
 	}
@@ -336,4 +363,4 @@ public:
 	
 };
 
-START_ROBOT_CLASS(VisionTest);
+START_ROBOT_CLASS(VisionSample2014);
