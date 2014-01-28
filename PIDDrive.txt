@@ -1,0 +1,48 @@
+#include "WPILib.h"
+#include <math.h>
+
+class PIDTEST : public SimpleRobot {
+	
+	Joystick leftStick, rightStick;
+	Talon leftMotor, rightMotor;
+	Encoder leftEncoder, rightEncoder;
+	PIDController leftPID, rightPID;
+	DriverStationLCD* driverStation;
+	
+public:
+	PIDTEST():
+	leftStick(1),
+	rightStick(2),
+	leftMotor(1),
+	rightMotor(2),
+	leftEncoder(1),
+	rightEncoder(2),
+	leftPID(0.1, 0.001, 0.0, &leftEncoder, &leftMotor)
+	rightPID(0.1, 0.001, 0.0, &rightEndcoder, &rightMotor){
+	
+	}
+	
+	leftPID.Enable();
+	righttPID.Enable();
+	
+	void Autonomous() {
+		~Autonomous;
+	}
+	void PIDDrive(){
+		leftPID.SetSetPoint((leftStick.GetX() + 1.0) * 2.5);
+		rightPID.SetSetPoint((rightStick.GetX() + 1.0) * 2.5);
+		Wait(0.02);
+	}
+	void OperatorControl() {
+		while(IsOperatorControl()) {
+		
+			driverStation = DriverStationLCD::GetInstance();
+			
+			PIDDrive();
+			
+			driverStation->PrintfLine(MotorrStationLCD::kUser_Line1, "Demo stuff");
+			driverStation->UpdateLCD();
+		}
+	}
+};
+START_ROBOT_CLASS(PIDTEST);
