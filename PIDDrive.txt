@@ -17,34 +17,33 @@ public:
 	rightMotor(2),
 	leftEncoder(1),
 	rightEncoder(2),
-	leftPID(0.1, 0.001, 0.0, &leftEncoder, &leftMotor)	//Calibrate later
+	leftPID(0.1, 0.001, 0.0, &leftEncoder, &leftMotor),	//Calibrate later
 	rightPID(0.1, 0.001, 0.0, &rightEndcoder, &rightMotor){
 	
 	}
 	
-	leftPID.Enable();
-	righttPID.Enable();
-	
 	void Autonomous() {
-		leftPID.SetSetPoint(10.0);	//Edit for units
-		rightPID.SetSetPoint(10.0);`
+		leftPID.Reset();
+		rightPID.Reset();
+		leftPID.Enable();
+		rightPID.Enable();
+		leftPID.SetSetPoint(10.0);	//9.55((4pi)/12)*1200 is about 10ft
+		rightPID.SetSetPoint(10.0);
 		~Autonomous;
 	}
 	void PIDDrive() {
-		leftPID.SetSetPoint((leftStick.GetX() + 1.0) * 2.5);
-		rightPID.SetSetPoint((rightStick.GetX() + 1.0) * 2.5);
+		leftPID.SetSetPoint((leftStick.GetY() + 1.0) * 2.5);
+		rightPID.SetSetPoint((rightStick.GetY() + 1.0) * 2.5);
 		Wait(0.02);
-		leftPID.Reset();
-		rightPID.Reset();
 	}
 	void OperatorControl() {
 		while(IsOperatorControl()) {
 		
 			driverStation = DriverStationLCD::GetInstance();
-			0
-			PIDDrive();
 			
-			driverStation->PrintfLine(MotorrStationLCD::kUser_Line1, "Demo stuff");
+			PIDDrive();	//set up to be a task
+			
+			driverStation->PrintfLine(MotorrStationLCD::kUser_Line1, "Maybe PID?");
 			driverStation->UpdateLCD();
 		}
 	}
