@@ -1,7 +1,7 @@
 #include "WPILib.h"
 #include <math.h>
 
-class PIDTEST : public SimpleRobot {
+class PID_TEST : public SimpleRobot {
 	
 	Joystick leftStick, rightStick;
 	Talon leftMotor, rightMotor;
@@ -10,14 +10,14 @@ class PIDTEST : public SimpleRobot {
 	DriverStationLCD* driverStation;
 	
 public:
-	PIDTEST():
+	PID_TEST():
 	leftStick(1),
 	rightStick(2),
 	leftMotor(1),
 	rightMotor(2),
 	leftEncoder(1),
 	rightEncoder(2),
-	leftPID(0.1, 0.001, 0.0, &leftEncoder, &leftMotor)
+	leftPID(0.1, 0.001, 0.0, &leftEncoder, &leftMotor)	//Calibrate later
 	rightPID(0.1, 0.001, 0.0, &rightEndcoder, &rightMotor){
 	
 	}
@@ -26,18 +26,22 @@ public:
 	righttPID.Enable();
 	
 	void Autonomous() {
+		leftPID.SetSetPoint(10.0);	//Edit for units
+		rightPID.SetSetPoint(10.0);`
 		~Autonomous;
 	}
-	void PIDDrive(){
+	void PIDDrive() {
 		leftPID.SetSetPoint((leftStick.GetX() + 1.0) * 2.5);
 		rightPID.SetSetPoint((rightStick.GetX() + 1.0) * 2.5);
 		Wait(0.02);
+		leftPID.Reset();
+		rightPID.Reset();
 	}
 	void OperatorControl() {
 		while(IsOperatorControl()) {
 		
 			driverStation = DriverStationLCD::GetInstance();
-			
+			0
 			PIDDrive();
 			
 			driverStation->PrintfLine(MotorrStationLCD::kUser_Line1, "Demo stuff");
@@ -45,4 +49,4 @@ public:
 		}
 	}
 };
-START_ROBOT_CLASS(PIDTEST);
+START_ROBOT_CLASS(PID_TEST);
