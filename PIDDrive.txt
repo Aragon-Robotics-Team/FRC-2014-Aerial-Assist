@@ -1,35 +1,46 @@
 #include "WPILib.h"
 #include <math.h>
 
-class PID_TEST : public SimpleRobot {
+#define _USE_MATH_DEFINES
+
+const float DistancePerTick = ((4*M_PI)/12)/1200;
+
+using namespace std;
+
+class PidTest : public SimpleRobot {
 	
-	Joystick leftStick, rightStick;
+	Joystick leftStick, rightStick;	//BEGIN Object creation
 	Talon leftMotor, rightMotor;
 	Encoder leftEncoder, rightEncoder;
 	PIDController leftPID, rightPID;
-	DriverStationLCD* driverStation;
+	DriverStationLCD* driverStation;	//END Object creation
 	
 public:
-	PID_TEST():
+	PidTest():
 	leftStick(1),
 	rightStick(2),
 	leftMotor(1),
 	rightMotor(2),
-	leftEncoder(1),
-	rightEncoder(2),
+	leftEncoder(1, 2),
+	rightEncoder(3, 4),
 	leftPID(0.1, 0.001, 0.0, &leftEncoder, &leftMotor),	//Calibrate later
 	rightPID(0.1, 0.001, 0.0, &rightEndcoder, &rightMotor){
-	
+
 	}
 	
 	void Autonomous() {
+		leftEncoder.Start();
+		rightEncoder.Start();
+		leftEncoder.SetDistancePerPulse(DistancePerTick);
+		rightEncoder.SetDistancePerPulse(DistancePerTick);
 		leftPID.Reset();
 		rightPID.Reset();
 		leftPID.Enable();
 		rightPID.Enable();
-		leftPID.SetSetPoint(10.0);	//9.55((4pi)/12)*1200 is about 10ft
-		rightPID.SetSetPoint(10.0);
-		~Autonomous;
+		leftPID.SetSetPoint(10 / DistancePerTick);	//ticks in  10ft
+		rightPID.SetSetPoint(10 / DistancePerTick);
+		Wait(10);
+		~Autonomous();
 	}
 	void PIDDrive() {
 		leftPID.SetSetPoint((leftStick.GetY() + 1.0) * 2.5);
@@ -48,4 +59,4 @@ public:
 		}
 	}
 };
-START_ROBOT_CLASS(PID_TEST);
+START_ROBOT_CLASS(PidTest);
