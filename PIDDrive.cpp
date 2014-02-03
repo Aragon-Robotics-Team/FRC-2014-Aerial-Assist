@@ -3,7 +3,7 @@
 #include "Gamepad.h"
 #include <math.h>
 
-#define CREEP_SPEED 0.6;
+const float CREEP_SPEED = 0.6;
 
 const float KP = 0.5;
 const float KI = 0.0;
@@ -60,7 +60,6 @@ public:
 			driverStation->PrintfLine(DriverStationLCD::kUser_Line2, "Errors: %f, %f", leftPID.GetError(), rightPID.GetError());
 			driverStation->UpdateLCD();
 		}
-		//~Autonomous();
 	}
 	void PIDDrive() {
 		if(drivePad->GetButton(2)){
