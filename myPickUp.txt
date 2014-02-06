@@ -1,0 +1,47 @@
+#include <Controllerstuff.h>
+//ini
+Joystick *gamepad;
+Talon *arm, *wristS, *rollers;
+
+gamepad = new Joystick(/*port here*/);
+arm = new Talon(/*asdf*/);
+wristS = new Talon(/*asdf*/);
+rollers = new Talon(/*asdf*/);
+
+pickerUpper() {
+	if (gamepad.GetRawButton(kLeftBumperNum)) {
+		arm(.5);
+	}
+	else {
+		arm(0);
+	}
+	
+	if(gamepad.GetRawButton(kLeftTriggerNum)) {
+		arm(-.5);
+	}
+	else{
+		arm(0);
+	}
+	
+	if(gamepad.GetRawAxis(kDPadYAxisNum) < 0) {
+		rollers(GetRawAxis(kDPadYAxisNum));
+	}
+	else{
+		rollers(0);
+	}
+
+	if(gamepad.GetRawButton(kRightTriggerNum)) {
+		arm(.5);
+	}
+	else{
+		arm(0);
+	}
+	
+	if(gamepad.GetRawButton(kRightBumperNum)) {
+		arm(-.5);
+	}
+	else{
+		arm(0);
+	}	
+	
+}
