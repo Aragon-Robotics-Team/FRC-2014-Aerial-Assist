@@ -1,0 +1,30 @@
+#include "WIPLib.h"
+#include "Gamepad.h"
+//#include "Target.h" Is this used? -M
+#include <SimpleRobot.h>
+#include <AnalogChannel.h>
+#include <math.h>
+
+void main()
+{
+	//inis
+	bool isShooting = false;
+	Relay *MrShoter = new Relay;
+	MrShoter = new Relay(/*PORT*/, Relay::kBothDirections);
+	ds = new DriverStationLCD;
+	//in whileisoperatorthing
+	
+	
+	if (gamepad.GetButton(1) && !isShooting) {
+		isShooting = true;
+		spike.Set(Relay::kOn);
+		ds->PrintfLine(DriverStationLCD::kUser_Line2, "Not shooting"); //change user line as necessary
+		
+	}
+	if (gamepad.GetButton(2) && isShooting) {
+		isShooting = false;
+		spike.Set(Relay::kOff);
+		ds->PrintfLine(DriverStationLCD::kUser_Line2, "READY TO FIRE CAPN"); //change user line as necessary
+		
+	}
+}
