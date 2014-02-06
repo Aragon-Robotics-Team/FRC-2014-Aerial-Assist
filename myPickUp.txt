@@ -42,6 +42,21 @@ pickerUpper() {
 	}
 	else{
 		arm(0);
+	}
+
+	bool isShooting = false;
+	
+	if (gamepad.GetButton(kAButton) && !isShooting) {
+		isShooting = true;
+		spike.Set(Relay::kOn);
+		ds->PrintfLine(DriverStationLCD::kUser_Line2, "Not shooting"); //change user line as necessary
+		
+	}
+	if (gamepad.GetButton(KBButton) && isShooting) {
+		isShooting = false;
+		spike.Set(Relay::kOff);
+		ds->PrintfLine(DriverStationLCD::kUser_Line2, "READY TO FIRE CAPN"); //change user line as necessary
+		
 	}	
 	
 }
