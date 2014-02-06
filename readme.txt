@@ -13,3 +13,19 @@ Coders' Rules:
 8. https://www.thc.org/root/phun/unmaintain.html is your bfll
 9. Stay classy
 9001. NO KITTEN COMMENTS!
+
+
+Control scheme (tentative)
+
+Gamepad
+left shoulder- arm up (while pushed)
+left trigger- arm down (while pushed)
+right trigger- wrist down/in (while pushed)
+right shoulder- wrist up/out (while pushed)
+Button A- shoot (one push)
+Button B- retract (one push)
+Dpad down- wheel at fingertips (while pushed)
+
+Joysticks
+standard stick things annd
+either triggers- creep (50% speed)
