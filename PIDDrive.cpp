@@ -20,6 +20,7 @@ class PIDTest : public SimpleRobot {
 	Gamepad gamepad;
 	Jaguar leftMotor, rightMotor;	//Jaguars will not be used only for OG9 testing
 	Encoder leftEncoder, rightEncoder;
+	Gyro gyro;
 	PIDController leftPID, rightPID;	//separate controllers for Position-based and Velocity-based control
 	DriverStationLCD* driverStation;
 	Timer autoTimer; //END Object creation
@@ -28,11 +29,12 @@ public:
 	PIDTest():
 	leftStick(1),
 	rightStick(2),
-	gamepad(3);
+	gamepad(3),
 	leftMotor(7),
 	rightMotor(5),
 	leftEncoder(11, 12),
 	rightEncoder(9, 10),
+	gyro(1),
 	leftPID(KP, KI, KD, &leftEncoder, &leftMotor),	//Calibrated for OG9
 	rightPID(KP, KI, KD, &rightEncoder, &rightMotor)
 	{

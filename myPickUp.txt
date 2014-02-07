@@ -2,11 +2,16 @@
 //ini
 Joystick *gamepad;
 Talon *arm, *wristS, *rollers;
+Timer *timer;
 
 gamepad = new Joystick(/*port here*/);
 arm = new Talon(/*asdf*/);
 wristS = new Talon(/*asdf*/);
 rollers = new Talon(/*asdf*/);
+
+bool isShooting = false;
+bool isHalfPower = false;
+bool alreadypressed = false;
 
 pickerUpper() {
 	if (gamepad.kLeftBumperNum)) {
@@ -46,17 +51,31 @@ pickerUpper() {
 
 	bool isShooting = false;
 	
-	if (gamepad.kAButton && !isShooting) {
+	if (gamepad.kAButton && !isShooting && !isHalfPower) {
 		isShooting = true;
 		spike.Set(Relay::kOn);
-		ds->PrintfLine(DriverStationLCD::kUser_Line2, "Not shooting"); //change user line as necessary
+		ds->PrintfLine(DriverStationLCD::kUser_Line2, "Not ready to shoot"); //change user line as necessary
 		
+	}
+	else if (gamepad.kAButton && !isShooting && isHalfPower) {
+		isShooting = true;
+		//shoot at half power
+		ds->PrintfLine(DriverStationLCD::kUser_Line2, "Not ready to shoot"); //change user line as necessary
 	}
 	if (gamepad.KBButton && isShooting) {
 		isShooting = false;
 		spike.Set(Relay::kOff);
 		ds->PrintfLine(DriverStationLCD::kUser_Line2, "READY TO FIRE CAPN"); //change user line as necessary
-		
 	}	
+	
+	if (gamepad.KXButton && !alreadypressed) {
+		if (isHalfPower) {
+			isHalfPower = false;
+		}
+		else {
+		isHalfPower = true;
+		}
+	}
+	
 	
 }
