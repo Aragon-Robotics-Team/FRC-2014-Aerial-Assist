@@ -4,7 +4,7 @@ Must be edited to remove "."s*/
 void OperatorControl() {
 		while(IsOperatorControl) {
 			if(recordingPinger.HasPeriodPassed(.001)) {
-				pinged = true;
+				pinged = true; //where we put our initializations
 				drivePad.GetLeftY(),
 				drivePad.GetRightY(),
 				drivePad.GetButton(2),
@@ -19,11 +19,10 @@ void OperatorControl() {
 				shootPad.GetDPad() == Gamepad::kUp,
 				shootPad.GetDPad() == Gamepad::kDown);
 			}
-			drive.TankDrive = (GetLeftY, GetRightY);
-			alreadyPushed = false;
+			//drive.TankDrive = (GetLeftY, GetRightY); DRIVE SYSTEM GOES HEAR
+			bool alreadyPushed = false;
 			if (GetButton(2) && alreadyPushed == false) { //spodermotor
 				alreadyPushed = true;
-				Winch();
 			}
 			
 		}
