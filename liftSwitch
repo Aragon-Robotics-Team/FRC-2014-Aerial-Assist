@@ -1,0 +1,22 @@
+/* Limit switches
+* Function: creates a maximum and minimum for the arm's movement as to not 
+* cause any breaking in the hardware.
+* Operates using two switches that take input and 
+* respectively stop the arm when those inputs are
+* fulfilled.
+* -Ken Preiser, 2/13/14
+*/
+
+//in class
+DigitalInput = limitSwitchTop;
+DigitalInput = limitSwitchBottom;
+
+//in initialization
+limitSwitchTop = new DigitalInput(1); //get ports from electronics later
+limitSwitchBottom = new DigitalInput(2); //^^
+
+//in teleop/autonomous 
+while (limitSwitch.get()) {
+
+	Timer.delay(10);
+}
