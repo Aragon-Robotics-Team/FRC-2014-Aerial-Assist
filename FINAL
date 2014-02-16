@@ -1,0 +1,194 @@
+#include "WPILib.h"
+#include "Gamepad.h"
+#include "Compressor.h"
+#include <Relay.h>
+#include "VelocityEncoder.h"
+
+/**
+ * This is a demo program showing the use of the RobotBase class.
+ * The SimpleRobot class is the base of a robot application that will automatically call your
+ * Autonomous and OperatorControl methods at the right time as controlled by the switches on
+ * the driver station or the field controls.
+ */ 
+
+const float JOY_DIR = 1;
+const float GAMEPAD_JOY_DIR = -1;
+
+const float CREEP_SPEED = 0.5;
+
+const float KP = 0.5;
+const float KI = 0.0;
+const float KD = 0.0;
+
+const float PI = 3.14159265358979;
+const float FEET_PER_TICK = ((4 * PI) / 12) / 1200;
+
+class Robot : public SimpleRobot
+{
+	DriverStationLCD *ds;
+	//AxisCamera *camera;
+	Talon leftDriveMotor, rightDriveMotor;
+	Talon arm, rollers;
+	Joystick leftStick, rightStick;
+	Gamepad gamepad;
+	Encoder leftEncoder, rightEncoder;
+	PIDController leftPID, rightPID; // use these to drive straight + measured
+	Compressor compressor;
+	Relay shooterSolenoid;
+	Watchdog doggy;
+
+public:
+	Robot():
+		leftDriveMotor(2),
+		rightDriveMotor(1),
+		arm(3),
+		rollers(6),
+		leftStick(1),
+		rightStick(2),
+		gamepad(3),
+		leftEncoder(5, 6),
+		rightEncoder(7, 8),
+		leftPID(KP, KI, KD, &leftEncoder, &leftDriveMotor),
+		rightPID(KP, KI, KD, &rightEncoder, &rightDriveMotor),
+		compressor(1, 1),
+		shooterSolenoid(2, Relay::kBothDirections),
+		doggy()
+	{
+		doggy.SetEnabled(false);
+		shooterSolenoid.Set(Relay::kOff);
+	}
+	
+	// limits maximum change in acceleration to protect chains
+	void softStart(float& currentSpeed, float inputValue){
+		currentSpeed = 0.99 * currentSpeed + 0.01 * inputValue;
+	}
+	
+	void startStraightPID(float setpoint){
+		leftPID.Reset();
+		rightPID.Reset();
+		leftPID.Enable();
+		rightPID.Enable();
+		leftPID.SetContinuous();
+		rightPID.SetContinuous();
+		leftPID.SetSetpoint(setpoint);
+		rightPID.SetSetpoint(setpoint);
+	}
+	
+	void disableStraightPID(){
+		leftPID.Disable();
+		rightPID.Disable();
+	}
+	/**
+	 * Drive left & right motors for 2 seconds then stop
+	 */
+	void Autonomous()
+	{
+		Timer autoTimer;
+		
+		leftEncoder.Start();
+		rightEncoder.Start();
+		
+		startStraightPID(10);
+		
+		while(autoTimer.Get() < 10){
+			ds = DriverStationLCD::GetInstance();
+			
+			ds->PrintfLine(DriverStationLCD::kUser_Line1, "Encoders: %f, %f", leftEncoder.GetDistance(), rightEncoder.GetDistance());
+			ds->PrintfLine(DriverStationLCD::kUser_Line2, "Straight error: %f, %f", leftPID.GetError(), rightPID.GetError());
+			ds->UpdateLCD();
+		}
+		disableStraightPID();
+	}
+	
+	void updateDriverStation(){
+		ds = DriverStationLCD::GetInstance();
+		
+		ds->PrintfLine(DriverStationLCD::kUser_Line1, "V0.0.1 Pre-NASA Scrim");
+		ds->UpdateLCD();
+	}
+	
+	void drive(){
+		float leftSpeedMultiplier = 1;
+		float rightSpeedMultiplier = 1;
+		if(leftStick.GetRawButton(2)) // Creep mode
+			leftSpeedMultiplier = CREEP_SPEED;
+		if(rightStick.GetRawButton(2))
+			rightSpeedMultiplier = CREEP_SPEED;
+		
+		leftDriveMotor.Set(-JOY_DIR * leftStick.GetY() * leftSpeedMultiplier);
+		rightDriveMotor.Set(JOY_DIR * rightStick.GetY() * rightSpeedMultiplier);
+	}
+	
+	void claw(){ // reads inputs from controllers and works the claw
+		arm.Set(GAMEPAD_JOY_DIR * gamepad.GetLeftY() * -.4);
+		rollers.Set(GAMEPAD_JOY_DIR * gamepad.GetRightY());
+	}
+	
+	void shooter(){
+		if(gamepad.GetButton(1)){
+			shooterSolenoid.Set(Relay::kForward); // poot the shoot forwoot
+		}
+		else {
+			shooterSolenoid.Set(Relay::kOff);
+		}
+	}
+	
+	void doRollers(){
+		if(gamepad.GetButton(6)){
+			rollers.Set(-1);
+		}
+		else {
+			rollers.Set(0);
+		}
+	}
+	
+	/**
+	 * Runs the motors with arcade steering. 
+	 */
+	void OperatorControl()
+	{
+		disableStraightPID();
+		compressor.Start();
+		compressor.SetRelayValue(Relay::kOn);
+		
+		leftEncoder.Start();
+		rightEncoder.Start();
+		leftEncoder.SetDistancePerPulse(FEET_PER_TICK);
+		rightEncoder.SetDistancePerPulse(FEET_PER_TICK);
+		
+		leftPID.SetContinuous();
+		rightPID.SetContinuous();
+		leftPID.Reset();
+		rightPID.Reset();
+		leftPID.Enable();
+		rightPID.Enable();
+		
+		while (IsOperatorControl())
+		{
+			updateDriverStation();
+			
+			if(compressor.GetPressureSwitchValue()){
+				compressor.SetRelayValue(Relay::kOff);
+			}
+			else {
+				compressor.SetRelayValue(Relay::kOn);
+			}
+			
+			drive();
+			claw();
+			shooter();
+			doRollers();
+			
+			Wait(0.005);				// wait for a motor update time
+		}
+	}
+	
+	/**
+	 * Runs during test mode
+	 */
+	void Test() {
+
+	}
+};
+
+START_ROBOT_CLASS(Robot);
