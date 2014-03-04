@@ -4,13 +4,6 @@
 #include <Relay.h>
 #include "VelocityEncoder.h"
 
-/**
- * This is a demo program showing the use of the RobotBase class.
- * The SimpleRobot class is the base of a robot application that will automatically call your
- * Autonomous and OperatorControl methods at the right time as controlled by the switches on
- * the driver station or the field controls.
- */ 
-
 // the good wheel pid constants
 // 0.4
 // 0.005
@@ -54,6 +47,7 @@ class Robot : public SimpleRobot
 	Relay shooterSolenoid;
 	Gyro gyro;
 	Watchdog doggy;
+	DigitalInput armSwitchBot;
 	float holdPosition;
 
 public:
@@ -74,7 +68,8 @@ public:
 		compressor(1, 1),
 		shooterSolenoid(2, Relay::kBothDirections),
 		gyro(5),
-		doggy()
+		doggy(),
+		armSwitchBot(1)	//Get port later
 	{
 		leftEncoder.SetDistancePerPulse(FEET_PER_TICK);
 		rightEncoder.SetDistancePerPulse(FEET_PER_TICK);
@@ -136,6 +131,8 @@ public:
 		ds->PrintfLine(DriverStationLCD::kUser_Line1, "Starting autonomous...");
 		ds->UpdateLCD();
 		
+		while(!armSwitchBot.Get()) arm.Set(-.2);
+		arm.Set(0);
 		armEncoder.Reset();
 		armEncoder.Start();
 		//startArmPID();
@@ -183,13 +180,25 @@ public:
 	void drive(){
 		float leftSpeedMultiplier = 1;
 		float rightSpeedMultiplier = 1;
-		if(leftStick.GetRawButton(2)) // Creep mode
-			leftSpeedMultiplier = CREEP_SPEED;
-		if(rightStick.GetRawButton(2))
-			rightSpeedMultiplier = CREEP_SPEED;
+		bool straight;
+		if (leftStick.GetRawButton(3) && rightStick.GetRawButton(3)) {
+			straight = true;
+		}
+		else straight = false;
 		
+		if(leftStick.GetRawButton(2)&& !straight) // Creep mode
+			leftSpeedMultiplier = CREEP_SPEED;
+		if(rightStick.GetRawButton(2) && !straight)
+			rightSpeedMultiplier = CREEP_SPEED;
+		if (straight) {
+			leftDriveMotor.Set(-JOY_DIR * (leftStick.GetY() + rightStick.GetY()) / 2); //go straight
+			rightDriveMotor.Set(JOY_DIR * (leftStick.GetY() + rightStick.GetY()) / 2);
+		}
+		else {
 		leftDriveMotor.Set(-JOY_DIR * leftStick.GetY() * leftSpeedMultiplier);
 		rightDriveMotor.Set(JOY_DIR * rightStick.GetY() * rightSpeedMultiplier);
+		}
+		
 	}
 	
 	float abs(float x){
@@ -198,17 +207,24 @@ public:
 	}
 	
 	void claw(){ // reads inputs from controllers and works the claw
-		if(abs(gamepad.GetLeftY()) > GAMEPAD_JOY_THRESH){
-			if(armPID.IsEnabled()) armPID.Disable();
-			arm.Set(GAMEPAD_JOY_DIR * gamepad.GetLeftY() * -1 * CLAW_SPEED);
-			holdPosition = armEncoder.GetDistance();
+		if(!armSwitchBot.Get()) {
+			if(abs(gamepad.GetLeftY()) > GAMEPAD_JOY_THRESH){
+					if(armPID.IsEnabled()) armPID.Disable();
+					arm.Set(GAMEPAD_JOY_DIR * gamepad.GetLeftY() * -1 * CLAW_SPEED);
+					holdPosition = armEncoder.GetDistance();
+				}
+				else {
+					armPID.Enable();
+					armPID.SetSetpoint(holdPosition);
+				}
+				
+				rollers.Set(GAMEPAD_JOY_DIR * gamepad.GetRightY());
 		}
 		else {
-			armPID.Enable();
-			armPID.SetSetpoint(holdPosition);
+			arm.Set(.25);
+			Wait(.1);
+			arm.Set(0);
 		}
-		
-		rollers.Set(GAMEPAD_JOY_DIR * gamepad.GetRightY());
 	}
 	
 	void shooter(){
@@ -269,6 +285,7 @@ public:
 			shooter();
 			doRollers();
 			setAngle();
+			
 			
 			doggy.Feed();
 			
