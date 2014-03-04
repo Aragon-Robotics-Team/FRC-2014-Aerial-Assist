@@ -9,7 +9,7 @@
 // 0.005
 // 0.005
 // 0.1 feet per pulse
-const char VERSION[] = "0.1.0 Last Day of Build";
+const char VERSION[] = "0.1.1 Week before Davis";
 
 
 const float JOY_DIR = 1;
