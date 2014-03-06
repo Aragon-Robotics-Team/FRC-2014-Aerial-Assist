@@ -1,0 +1,22 @@
+DigitalInput *limswitchtop = new DigitalInput(top);
+DigitauInput *limswitchbottom = new DigitalInput(bottom);
+
+limswitchbottom(12324123PORT)
+limswitchtop (ANOTHAPORT)
+
+
+
+in while loop
+
+limswitchtop.Get();
+limswitchbottom.Get();
+
+if (limswitchtop.Get()) {
+	ds->PrintfLine(DriverStationLCD::kUser_line1, "Too high"
+}
+else if (limswitchbottom.Get()) {
+	ds->PrintfLine(DriverStationLCD::kUser_Line1, "Too low"
+}
+if (!limswitchtop.Get() && !limswitchtop.Get()) {
+	ds->PrintfLine(DriverStationLCD::kUser_Line1, "Just right"
+}
