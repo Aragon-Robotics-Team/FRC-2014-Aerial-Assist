@@ -28,21 +28,33 @@ const float FEET_PER_TICK = ((4 * PI) / 12) / 1200;
 class Robot : public SimpleRobot
 {
 	DriverStationLCD *ds;
+	
 	/* AxisCamera *camera; */
+	
 	Talon leftDriveMotor, rightDriveMotor;
 	Talon arm, rollers;
-	Joystick leftStick, rightStick;
-	Gamepad gamepad;
-	Encoder leftEncoder, rightEncoder;
-	PIDController leftPID, rightPID; //Use these to drive straight + measured
-	Encoder armEncoder;
-	PIDController armPID;
+	
 	Compressor compressor;
+	
 	Relay shooterSolenoid;
+	
+	Encoder leftEncoder, rightEncoder;
+	Encoder armEncoder;
+	
 	Gyro gyro;
-	Watchdog doggy;
+	
 	DigitalInput armSwitchBot;
 	DigitalInput armSwitchTop;
+	
+	Joystick leftStick, rightStick;
+	Gamepad gamepad;
+	
+	PIDController leftPID, rightPID; //Use these to drive straight + measured
+	PIDController armPID;
+	
+	Watchdog doggy;
+	
+	
 	float holdPosition;
 
 public:
@@ -51,21 +63,31 @@ public:
 		rightDriveMotor(1),
 		arm(3),
 		rollers(6),
+		
+		compressor(1, 1),
+		
+		shooterSolenoid(2, Relay::kBothDirections),
+		
+		leftEncoder(5, 6),
+		rightEncoder(7, 8),
+		armEncoder(9, 10),
+		
+		gyro(5),
+		
+		armSwitchBot(1),	//CALIBRATE: Get port later
+		armSwitchTop(1)		//CALIBRATE: Get port later
+		
 		leftStick(1),
 		rightStick(2),
 		gamepad(3),
-		leftEncoder(5, 6),
-		rightEncoder(7, 8),
+		
 		leftPID(KP, KI, KD, &leftEncoder, &leftDriveMotor),
 		rightPID(KP, KI, KD, &rightEncoder, &rightDriveMotor),
-		armEncoder(9, 10),
 		armPID(ARM_KP, ARM_KI, ARM_KD, &armEncoder, &arm),
-		compressor(1, 1),
-		shooterSolenoid(2, Relay::kBothDirections),
-		gyro(5),
+			
 		doggy(),
-		armSwitchBot(1),	//CALIBRATE: Get port later
-		armSwitchTop(1)		//CALIBRATE: Get port later
+		
+
 	{
 		leftEncoder.SetDistancePerPulse(FEET_PER_TICK);
 		rightEncoder.SetDistancePerPulse(FEET_PER_TICK);
