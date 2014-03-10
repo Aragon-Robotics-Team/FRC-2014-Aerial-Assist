@@ -101,6 +101,11 @@ public:
 		holdPosition = 0;
 	}
 	
+	float abs(float x){
+		if(x < 0) return -x;
+		return x;
+	}
+	
 	//Limits maximum change in acceleration to protect chains
 	/* void softStart(float& currentSpeed, float inputValue){
 		currentSpeed = 0.99 * currentSpeed + 0.01 * inputValue;
@@ -211,11 +216,6 @@ public:
 			rightDriveMotor.Set(JOY_DIR * rightStick.GetY() * rightSpeedMultiplier);
 		}
 		
-	}
-	
-	float abs(float x){
-		if(x < 0) return -x;
-		return x;
 	}
 	
 	void claw(){ // reads inputs from controllers and works the claw
