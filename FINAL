@@ -1,10 +1,15 @@
+//Amateur Professional, Lucky Dreamer; A-Town lets do
+//mpph
+
+//HOLYSHIZ ALTON PLEASE CALL THE ROLLERS/FINGERS AND THE ARM DIFFERENT THINGS KTHXBAI
 #include "WPILib.h"
 #include "Gamepad.h"
 #include "Compressor.h"
 #include <Relay.h>
 #include "VelocityEncoder.h"
+#include <AnalogChannel.h>
 
-const char VERSION[] = "0.1.1 Week Before Davis";
+const char VERSION[] = "2.0.0 BETA: Pit Day SVR";
 
 const float JOY_DIR = 1;
 const float GAMEPAD_JOY_DIR = -1;
@@ -12,7 +17,7 @@ const float GAMEPAD_JOY_DIR = -1;
 const float CREEP_SPEED = 0.5;
 const float CLAW_SPEED = 0.4;
 
-const float KP = 0.5;
+const float KP = -0.5;
 const float KI = 0.0;
 const float KD = 0.0;
 
@@ -22,39 +27,33 @@ const float ARM_KD = -0.005;
 
 const float GAMEPAD_JOY_THRESH = 0.05;
 
+const int POT_MAX = 480;
+const int POT_MIN = 160;
+const int POT_ERROR = 10;
+
 const float PI = 3.14159265358979;
 const float FEET_PER_TICK = ((4 * PI) / 12) / 1200;
 
 class Robot : public SimpleRobot
 {
 	DriverStationLCD *ds;
-	
 	/* AxisCamera *camera; */
-	
 	Talon leftDriveMotor, rightDriveMotor;
 	Talon arm, rollers;
-	
-	Compressor compressor;
-	
-	Relay shooterSolenoid;
-	
-	Encoder leftEncoder, rightEncoder;
-	Encoder armEncoder;
-	
-	Gyro gyro;
-	
-	DigitalInput armSwitchBot;
-	DigitalInput armSwitchTop;
-	
 	Joystick leftStick, rightStick;
 	Gamepad gamepad;
-	
+	Encoder leftEncoder, rightEncoder;
 	PIDController leftPID, rightPID; //Use these to drive straight + measured
+	Encoder armEncoder;
 	PIDController armPID;
-	
+	Compressor compressor;
+	Relay shooterSolenoid;
+	DoubleSolenoid topArmSolenoid;
+	Gyro gyro;
 	Watchdog doggy;
-	
-	
+	DigitalInput armSwitchBot;
+	DigitalInput armSwitchTop;
+	AnalogChannel armPot;
 	float holdPosition;
 
 public:
@@ -63,31 +62,23 @@ public:
 		rightDriveMotor(1),
 		arm(3),
 		rollers(6),
-		
-		compressor(1, 1),
-		
-		shooterSolenoid(2, Relay::kBothDirections),
-		
-		leftEncoder(5, 6),
-		rightEncoder(7, 8),
-		armEncoder(9, 10),
-		
-		gyro(5),
-		
-		armSwitchBot(1),	//CALIBRATE: Get port later
-		armSwitchTop(1)		//CALIBRATE: Get port later
-		
 		leftStick(1),
 		rightStick(2),
 		gamepad(3),
-		
+		leftEncoder(5, 6),
+		rightEncoder(7, 8),
 		leftPID(KP, KI, KD, &leftEncoder, &leftDriveMotor),
 		rightPID(KP, KI, KD, &rightEncoder, &rightDriveMotor),
+		armEncoder(9, 10),
 		armPID(ARM_KP, ARM_KI, ARM_KD, &armEncoder, &arm),
-			
+		compressor(1, 1),
+		shooterSolenoid(2, Relay::kBothDirections),
+		topArmSolenoid(1, 2),
+		gyro(5),
 		doggy(),
-		
-
+		armSwitchBot(2),
+		armSwitchTop(3),
+		armPot(1)
 	{
 		leftEncoder.SetDistancePerPulse(FEET_PER_TICK);
 		rightEncoder.SetDistancePerPulse(FEET_PER_TICK);
@@ -97,13 +88,9 @@ public:
 		doggy.SetExpiration(1.0);
 		
 		shooterSolenoid.Set(Relay::kOff);
+		engageArm();
 		
 		holdPosition = 0;
-	}
-	
-	float abs(float x){
-		if(x < 0) return -x;
-		return x;
 	}
 	
 	//Limits maximum change in acceleration to protect chains
@@ -135,25 +122,112 @@ public:
 		armPID.Enable();
 		armPID.SetContinuous();
 	}
-
-	void Autonomous()
+	
+	void AutonomousWithPID() {
+		doggy.SetEnabled(false);
+		
+		ds = DriverStationLCD::GetInstance();
+		ds->PrintfLine(DriverStationLCD::kUser_Line1, "Starting autonomous (PID)...");
+		ds->UpdateLCD();
+		
+		arm.Set(.25);
+		Wait(.5);
+		arm.Set(0);
+		
+		armPID.Reset();
+		armPID.Enable();
+		armPID.SetContinuous(true);
+		armPID.SetSetpoint(armEncoder.GetDistance());
+				
+		releaseArm();
+		
+		leftPID.SetSetpoint(10);
+		rightPID.SetSetpoint(10);
+		
+		while(abs(leftPID.GetError()) > 0.1 || abs(rightPID.GetError()) > 0.1){
+			ds->PrintfLine(DriverStationLCD::kUser_Line3, "e: %f, d: %f", leftPID.GetError(), leftEncoder.GetDistance());
+			ds->PrintfLine(DriverStationLCD::kUser_Line4, "e: %f, d: %f", rightPID.GetError(), rightEncoder.GetDistance());
+			ds->UpdateLCD();
+		}
+		
+		shooterSolenoid.Set(Relay::kForward);
+		Wait(.6);
+		shooterSolenoid.Set(Relay::kOff);
+		
+		ds->PrintfLine(DriverStationLCD::kUser_Line5, "Autonomous done.");
+		ds->UpdateLCD();
+	}
+	
+	void AutonomousUsingTime()
 	{
-		Timer autonomousTimer;
+		armPID.Disable();
+		
+		Timer autonomousTimer;	//CALIBRATE: Unused timer
 		autonomousTimer.Start();
 		
 		doggy.SetEnabled(false);
 		
 		ds = DriverStationLCD::GetInstance();
 		
-		ds->PrintfLine(DriverStationLCD::kUser_Line1, "Starting autonomous...");
+		ds->PrintfLine(DriverStationLCD::kUser_Line1, "Starting autonomous (jank)...");
 		ds->UpdateLCD();
 		
+		/*startStraightPID();
+		ds->PrintfLine(DriverStationLCD::kUser_Line2, "e: %f, d: %f", leftPID.GetError(), leftEncoder.GetDistance());
+		ds->UpdateLCD();
+		leftPID.SetSetpoint(-5);	//Units in feet
+		rightPID.SetSetpoint(5);
+		ds->PrintfLine(DriverStationLCD::kUser_Line5, "e: %f, d: %f", leftPID.GetError(), leftEncoder.GetDistance());
+		ds->UpdateLCD();*/
+		
 		arm.Set(.25);
+		Wait(0.65);
+		arm.Set(0);
+		
+		armPID.Reset();
+		armPID.Enable();
+		armPID.SetContinuous(true);
+		armPID.SetSetpoint(armEncoder.GetDistance());
+		
+		releaseArm();
+		
+		leftDriveMotor.Set(.75);
+		rightDriveMotor.Set(-.75);
+		Wait(2.25);
+		
+		shooterSolenoid.Set(Relay::kForward);
+		Wait(.6);
+		shooterSolenoid.Set(Relay::kOff);
+		
+		leftDriveMotor.Set(-.5);
+		rightDriveMotor.Set(.5);
+		Wait(.25);
+		leftDriveMotor.Set(0);
+		rightDriveMotor.Set(0);
+		
+		/*ds->PrintfLine(DriverStationLCD::kUser_Line2, "PID started...");
+		ds->UpdateLCD();
+		
+		while(abs(leftPID.GetError()) > 0.1 || abs(rightPID.GetError()) > 0.1){
+			ds->PrintfLine(DriverStationLCD::kUser_Line3, "e: %f, d: %f", leftPID.GetError(), leftEncoder.GetDistance());
+			ds->PrintfLine(DriverStationLCD::kUser_Line4, "e: %f, d: %f", rightPID.GetError(), rightEncoder.GetDistance());
+			ds->UpdateLCD();
+		}
+		
+		ds->PrintfLine(DriverStationLCD::kUser_Line4, "PID done.");
+		ds->UpdateLCD();*/
+		
+		//rollers.Set(0.75);
+		//Wait(2.0);
+		//rollers.Set(0);
+		
+		/*arm.Set(.15);
 		while(!armSwitchTop.Get()); //Wait for arm to reach top position
 		arm.Set(0);
-		armEncoder.Reset(); /* Reset the arm encoder based on limit switch absolute position */
+		armEncoder.Reset(); // Reset the arm encoder based on limit switch absolute position 
 		armEncoder.Start();
-		//startArmPID();
+		startArmPID();
+		armPID.SetSetpoint();
 		while(autonomousTimer.Get() < 10){
 			ds->PrintfLine(DriverStationLCD::kUser_Line2, "Arm encoder: %f", armEncoder.GetDistance());
 			ds->PrintfLine(DriverStationLCD::kUser_Line3, "ArmPID error: %f", armPID.GetError());
@@ -161,37 +235,143 @@ public:
 			ds->UpdateLCD();
 		}
 		
-		shooterSolenoid.Set(Relay::kForward);
-		leftPID.SetSetpoint(10);	//Units in feet
-		rightPID.SetSetpoint(10);
+		releaseArm();
+		shooterSolenoid.Set(Relay::kForward); */
 		
 		ds->PrintfLine(DriverStationLCD::kUser_Line5, "Autonomous done.");
 		ds->UpdateLCD();
+	}
+	
+	void AutonomousGroundPID(){
+		armPID.Disable();
 		
-		/* leftEncoder.Start();
-		rightEncoder.Start();
+		Timer autonomousTimer;
+		autonomousTimer.Start();
 		
-		startStraightPID();
-		setStraightPID(10);
+		doggy.SetEnabled(false);
 		
-		while(autonomousTimer.Get() < 10){
-			ds = DriverStationLCD::GetInstance();
+		ds = DriverStationLCD::GetInstance();
+		
+		ds->PrintfLine(DriverStationLCD::kUser_Line1, "Starting ground autonomous (jank)...");
+		ds->UpdateLCD();
+	
+		armPID.Reset();
+		armPID.Enable();
+		armPID.SetContinuous(true);
+		armPID.SetSetpoint(armEncoder.GetDistance());
+		
+		releaseArm();
+
+		leftPID.SetSetpoint(11.75);	//CALIBRATE
+		rightPID.SetSetpoint(11.75);
+		
+		shooterSolenoid.Set(Relay::kForward);
+		Wait(.6);
+		shooterSolenoid.Set(Relay::kOff);
+		
+		leftPID.SetSetpoint(-5);
+		rightPID.SetSetpoint(-5);
+		Wait(.5);
+		leftDriveMotor.Set(-.5);	//Rotates counterclockwise
+		rightDriveMotor.Set(-.5);
+	}
+	
+	void AutonomousGroundTime(){
+		
+		engageArm();
+		
+		armPID.Disable();
+				
+		Timer autonomousTimer;	//CALIBRATE: Unused timer
+		autonomousTimer.Start();
+				
+		doggy.SetEnabled(false);
+				
+		ds = DriverStationLCD::GetInstance();
 			
-			ds->PrintfLine(DriverStationLCD::kUser_Line1, "Encoders: %f, %f", leftEncoder.GetDistance(), rightEncoder.GetDistance());
-			ds->PrintfLine(DriverStationLCD::kUser_Line2, "Straight error: %f, %f", leftPID.GetError(), rightPID.GetError());
-			ds->UpdateLCD();
-		}
-		disableStraightPID(); */
+		ds->PrintfLine(DriverStationLCD::kUser_Line1, "Starting ground autonomous (jank)...");
+		ds->UpdateLCD();
+		
+		leftDriveMotor.Set(.75);
+		rightDriveMotor.Set(-.75);
+		Wait(1.75);	//CALIBRATE
+		leftDriveMotor.Set(-.5);
+		rightDriveMotor.Set(.5);
+		Wait(.2945);
+		leftDriveMotor.Set(0);
+		rightDriveMotor.Set(0);
+		
+		arm.Set(.2734);
+		Wait(.75);
+		arm.Set(0);
+		
+		armPID.Reset();
+		armPID.Enable();
+		armPID.SetContinuous(true);
+		armPID.SetSetpoint(armEncoder.GetDistance());
+				
+		releaseArm();
+		
+		Wait(.2);
+		
+		shooterSolenoid.Set(Relay::kForward);
+		Wait(.6);
+		shooterSolenoid.Set(Relay::kOff);
+		
+		leftDriveMotor.Set(.5);
+		rightDriveMotor.Set(-.5);
+		Wait(.5);	//CALIBRATE
+		leftDriveMotor.Set(0);
+		rightDriveMotor.Set(0);
+		leftDriveMotor.Set(-0.5);	//Turns counterclockwise for easy loading
+		rightDriveMotor.Set(-0.5);
+		Wait(1);
+		leftDriveMotor.Set(0);
+		rightDriveMotor.Set(0);
+	}
+	
+	void Autonomous(){
+		//CALIBRATE: PICK ONE:
+		//AutonomousWithPID();
+		//AutonomousUsingTime();
+		//AutonomousGroundPID();
+		AutonomousGroundTime();
 	}
 	
 	void updateDriverStation(){	//Updates the console of the driver station with current sensor readings
 		ds = DriverStationLCD::GetInstance();
 		
 		ds->PrintfLine(DriverStationLCD::kUser_Line1, VERSION);	//Prints version number
-		ds->PrintfLine(DriverStationLCD::kUser_Line2, "Arm: %f", armEncoder.GetDistance());	//Prints arm encoder value
-		ds->PrintfLine(DriverStationLCD::kUser_Line3, "Arm Error: %f, %f", armPID.GetError()); //Prints the arm's PID error
-		ds->PrintfLine(DriverStationLCD::kUser_Line4, "C. Switch: %d", compressor.GetPressureSwitchValue()); //Prints value of value of the 
+		ds->PrintfLine(DriverStationLCD::kUser_Line2, "Arm: %.2f, %.2f", armEncoder.GetDistance(), armPID.GetError());	//Prints arm encoder value and PID error
+		ds->PrintfLine(DriverStationLCD::kUser_Line3, "Arm Pot: %d", armPot.GetValue()); //Prints the pot value
+		ds->PrintfLine(DriverStationLCD::kUser_Line4, "C. Switch: %d", compressor.GetPressureSwitchValue()); //Prints value of compressor switch value of the
+		ds->PrintfLine(DriverStationLCD::kUser_Line5, "bottom/top: %d, %d", armSwitchBot.Get(), armSwitchTop.Get());
+		ds->PrintfLine(DriverStationLCD::kUser_Line6, "d: %f", -leftEncoder.GetDistance());
 		ds->UpdateLCD();
+	}
+	
+	void setArm(int potValue){	//CALIBRATE: Unused function
+		if(armPot.GetValue() > potValue + POT_ERROR)
+		{
+			while(armPot.GetValue() > potValue + POT_ERROR){
+				arm.Set(0.5);
+			}
+		}
+		else if (armPot.GetValue() < potValue - POT_ERROR)
+		{
+			while(armPot.GetValue() < potValue - POT_ERROR){
+				arm.Set(-0.5);
+			}
+		}
+		arm.Set(0.0);
+	}
+	
+	void engageArm(){
+		topArmSolenoid.Set(DoubleSolenoid::kForward);
+	}
+	
+	void releaseArm(){
+		topArmSolenoid.Set(DoubleSolenoid::kReverse);
 	}
 	
 	void drive(){	//Teleoperated driving
@@ -218,14 +398,15 @@ public:
 		
 	}
 	
+	float abs(float x){
+		if(x < 0) return -x;
+		return x;
+	}
+	
 	void claw(){ // reads inputs from controllers and works the claw
 		if(abs(gamepad.GetLeftY()) > GAMEPAD_JOY_THRESH){
-			if(armSwitchBot.Get() && gamepad.GetLeftY() < 0);
-			else if(armSwitchTop.Get() && gamepad.GetLeftY() > 0);
-			else {
-				if(armPID.IsEnabled()) armPID.Disable(); 
-				arm.Set(GAMEPAD_JOY_DIR * gamepad.GetLeftY() * -1 * CLAW_SPEED);
-			}
+			if(armPID.IsEnabled()) armPID.Disable(); 
+			arm.Set(GAMEPAD_JOY_DIR * gamepad.GetLeftY() * -1 * CLAW_SPEED);
 			
 			holdPosition = armEncoder.GetDistance();
 		}
@@ -233,41 +414,38 @@ public:
 			armPID.Enable();
 			armPID.SetSetpoint(holdPosition);
 		}
-		rollers.Set(GAMEPAD_JOY_DIR * gamepad.GetRightY());
 	}
 	
 	void shooter(){
-		if(gamepad.GetButton(1)){
-			rollers.Set(1);
-			Wait(0.1);
+		if(gamepad.GetButton(6) || rightStick.GetRawButton(3)){
 			shooterSolenoid.Set(Relay::kForward); // use kForward not kOn
-			Wait(0.1);
-			rollers.Set(0);
 		}
 		else {
 			shooterSolenoid.Set(Relay::kOff);
 		}
 	}
 	
-	void doRollers(){
-		if(gamepad.GetButton(6)){
-			rollers.Set(-0.75);
-		}
-		else {
-			rollers.Set(0);
+	void topArm(){
+		if(gamepad.GetButton(3)) topArmSolenoid.Set(DoubleSolenoid::kForward);
+		if(gamepad.GetButton(4)) topArmSolenoid.Set(DoubleSolenoid::kReverse);
+	}
+	
+	void topArmToggle(){
+		int isEngaged = 0;
+		if(gamepad.GetButton(8)){
+			isEngaged = (isEngaged + 1) % 2;
 		}
 	}
 	
-	void setAngle(){ //Set a nice shooting angle for the arm
-		if(gamepad.GetButton(2)){
-			armPID.Enable();
-			armPID.SetSetpoint(6.4);	//CALIBRATE
-			holdPosition = 6.4;
+	void doRollers(){
+		if(abs(gamepad.GetRightY()) > GAMEPAD_JOY_THRESH){
+			rollers.Set(GAMEPAD_JOY_DIR * gamepad.GetRightY());
+		}
+		else {
+			rollers.Set(-0.5);
 		}
 	}
-	/**
-	 * Runs the motors with arcade steering. 
-	 */
+
 	void OperatorControl()
 	{
 		disableStraightPID();
@@ -293,8 +471,7 @@ public:
 			claw();
 			shooter();
 			doRollers();
-			setAngle();
-			
+			topArm();
 			
 			doggy.Feed();
 			
@@ -302,9 +479,6 @@ public:
 		}
 	}
 	
-	/**
-	 * Runs during test mode
-	 */
 	void Test() {
 
 	}
