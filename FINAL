@@ -1,7 +1,6 @@
-//Amateur Professional, Lucky Dreamer; A-Town lets do
-//mpph
+//Lucky Dreamer, Amateur Professional, Phantom Pupil, Foolish Demon; A-Town lets do
+//Amateur Professional last to edit
 
-//HOLYSHIZ ALTON PLEASE CALL THE ROLLERS/FINGERS AND THE ARM DIFFERENT THINGS KTHXBAI
 #include "WPILib.h"
 #include "Gamepad.h"
 #include "Compressor.h"
@@ -9,7 +8,7 @@
 #include "VelocityEncoder.h"
 #include <AnalogChannel.h>
 
-const char VERSION[] = "2.0.0 BETA: Pit Day SVR";
+const char VERSION[] = "2.0.0 SVR 4/4/14";
 
 const float JOY_DIR = 1;
 const float GAMEPAD_JOY_DIR = -1;
@@ -55,6 +54,7 @@ class Robot : public SimpleRobot
 	DigitalInput armSwitchTop;
 	AnalogChannel armPot;
 	float holdPosition;
+	bool isEngaged;
 
 public:
 	Robot():
@@ -91,6 +91,7 @@ public:
 		engageArm();
 		
 		holdPosition = 0;
+		isEngaged = true;
 	}
 	
 	//Limits maximum change in acceleration to protect chains
@@ -428,13 +429,18 @@ public:
 	void topArm(){
 		if(gamepad.GetButton(3)) topArmSolenoid.Set(DoubleSolenoid::kForward);
 		if(gamepad.GetButton(4)) topArmSolenoid.Set(DoubleSolenoid::kReverse);
+		if(isEngaged) topArmSolenoid.Set(DoubleSolenoid::kForward);
+		else topArmSolenoid.Set(DoubleSolenoid::kReverse);
 	}
 	
 	void topArmToggle(){
-		int isEngaged = 0;
-		if(gamepad.GetButton(8)){
-			isEngaged = (isEngaged + 1) % 2;
+		if(gamepad.GetButton(8) && !isEngaged){
+			isEngaged = true;
 		}
+		else if(gamepad.GetButton(8) && isEngaged){
+			isEngaged = false;
+		}
+		Wait(0.1);	//Decent refresh rate
 	}
 	
 	void doRollers(){
@@ -472,6 +478,7 @@ public:
 			shooter();
 			doRollers();
 			topArm();
+			topArmToggle();
 			
 			doggy.Feed();
 			
